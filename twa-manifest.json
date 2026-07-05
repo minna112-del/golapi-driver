@@ -1,0 +1,27 @@
+{
+  "host": "www.golapishop.online",
+  "name": "Golapi Driver",
+  "short_name": "Golapi Driver",
+  "theme_color": "#E65100",
+  "navigation_color": "#E65100",
+  "navigation_color_dark": "#BF360C",
+  "navigation_divider_color": "#E65100",
+  "navigation_divider_color_dark": "#BF360C",
+  "background_color": "#FFF3E0",
+  "start_url": "/#driver",
+  "icon_url": "https://raw.githubusercontent.com/minna112-del/create-ai-video/main/logo.jpeg",
+  "maskable_icon_url": "https://raw.githubusercontent.com/minna112-del/create-ai-video/main/logo.jpeg",
+  "splash_screen_fade_out_duration": 300,
+  "enable_notifications": true,
+  "shortcuts": [],
+  "packageId": "online.golapishop.driver",
+  "signing_key": {
+    "path": "golapi-driver.keystore",
+    "alias": "golapi-driver"
+  },
+  "app_version_name": "1.0.0",
+  "app_version_code": 1,
+  "display": "standalone",
+  "orientation": "portrait",
+  "fallback_type": "customtabs"
+}
