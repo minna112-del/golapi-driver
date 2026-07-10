@@ -15,7 +15,7 @@ jobs:
 
       - uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
 
       - uses: android-actions/setup-android@v3
@@ -39,100 +39,115 @@ jobs:
           mkdir -p app/app/src/main/res/values
 
           python3 -c "
-          from PIL import Image
-          import os
-          src = Image.open('.github/icons/ic_launcher.png')
-          for sz, dn in [(48,'mdpi'),(72,'hdpi'),(96,'xhdpi'),(144,'xxhdpi'),(192,'xxxhdpi')]:
-              d = 'app/app/src/main/res/mipmap-' + dn
-              os.makedirs(d, exist_ok=True)
-              src.resize((sz,sz), Image.LANCZOS).save(d + '/ic_launcher.png')
-          print('Icons ready')
-          "
+from PIL import Image
+import os
+src = Image.open('.github/icons/ic_launcher.png').convert('RGBA')
+for sz, dn in [(48,'mdpi'),(72,'hdpi'),(96,'xhdpi'),(144,'xxhdpi'),(192,'xxxhdpi')]:
+    d = 'app/app/src/main/res/mipmap-' + dn
+    os.makedirs(d, exist_ok=True)
+    src.resize((sz,sz), Image.LANCZOS).save(d + '/ic_launcher.png')
+print('Icons OK')
+"
 
-          cat > app/settings.gradle << 'EOF'
-          rootProject.name = "GolApiDriver"
-          include ':app'
-          EOF
+          cat > app/settings.gradle << 'EOF2'
+rootProject.name = "GolApiDriver"
+include ':app'
+EOF2
 
-          cat > app/build.gradle << 'EOF'
-          buildscript {
-            repositories { google(); mavenCentral() }
-            dependencies { classpath 'com.android.tools.build:gradle:8.2.2' }
-          }
-          allprojects { repositories { google(); mavenCentral() } }
-          EOF
+          cat > app/build.gradle << 'EOF2'
+buildscript {
+  repositories { google(); mavenCentral() }
+  dependencies { classpath 'com.android.tools.build:gradle:8.2.2' }
+}
+allprojects { repositories { google(); mavenCentral() } }
+EOF2
 
-          cat > app/gradle.properties << 'EOF'
-          android.useAndroidX=true
-          android.enableJetifier=true
-          org.gradle.jvmargs=-Xmx2048m
-          EOF
+          cat > app/gradle.properties << 'EOF2'
+android.useAndroidX=true
+android.enableJetifier=true
+org.gradle.jvmargs=-Xmx2048m
+EOF2
 
-          cat > app/app/build.gradle << 'EOF'
-          plugins { id 'com.android.application' }
-          configurations.all {
-            exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
-            exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
-            resolutionStrategy.eachDependency { d ->
-              if (d.requested.group == 'org.jetbrains.kotlin') d.useVersion '1.9.24'
-            }
-          }
-          android {
-            namespace 'online.golapishop.driver'
-            compileSdk 34
-            defaultConfig {
-              applicationId 'online.golapishop.driver'
-              minSdk 21
-              targetSdk 34
-              versionCode ${{ github.run_number }}
-              versionName '1.${{ github.run_number }}'
-            }
-            signingConfigs {
-              release {
-                storeFile file('/tmp/release.keystore')
-                storePassword System.getenv('KEY_STORE_PASSWORD')?.trim()
-                keyAlias System.getenv('KEY_ALIAS')?.trim()
-                keyPassword System.getenv('KEY_PASSWORD')?.trim()
-              }
-            }
-            buildTypes { release { minifyEnabled false; signingConfig signingConfigs.release } }
-            packagingOptions { exclude 'META-INF/versions/9/previous-compilation-data.bin' }
-          }
-          dependencies {
-            implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
-            implementation 'androidx.appcompat:appcompat:1.7.0'
-          }
-          EOF
+          cat > app/app/build.gradle << 'EOF2'
+plugins { id 'com.android.application' }
+configurations.all {
+  exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+  exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+  resolutionStrategy.eachDependency { d ->
+    if (d.requested.group == 'org.jetbrains.kotlin') d.useVersion '1.9.24'
+  }
+}
+android {
+  namespace 'online.golapishop.driver'
+  compileSdk 34
+  defaultConfig {
+    applicationId 'online.golapishop.driver'
+    minSdk 21
+    targetSdk 34
+    versionCode 1
+    versionName '1.0'
+  }
+  signingConfigs {
+    release {
+      storeFile file('/tmp/release.keystore')
+      storePassword System.getenv('KEY_STORE_PASSWORD')?.trim()
+      keyAlias System.getenv('KEY_ALIAS')?.trim()
+      keyPassword System.getenv('KEY_PASSWORD')?.trim()
+    }
+  }
+  buildTypes {
+    release {
+      minifyEnabled false
+      signingConfig signingConfigs.release
+    }
+  }
+  packagingOptions {
+    exclude 'META-INF/versions/9/previous-compilation-data.bin'
+  }
+}
+dependencies {
+  implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
+  implementation 'androidx.appcompat:appcompat:1.7.0'
+}
+EOF2
 
-          cat > app/app/src/main/AndroidManifest.xml << 'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-            <application android:label="Golapi Driver" android:icon="@mipmap/ic_launcher" android:theme="@style/AppTheme" android:allowBackup="true">
-              <activity android:name="com.google.androidbrowserhelper.trusted.LauncherActivity" android:exported="true">
-                <meta-data android:name="android.support.customtabs.trusted.DEFAULT_URL" android:value="https://www.golapishop.online/?role=driver" />
-                <intent-filter>
-                  <action android:name="android.intent.action.MAIN"/>
-                  <category android:name="android.intent.category.LAUNCHER"/>
-                </intent-filter>
-                <intent-filter android:autoVerify="true">
-                  <action android:name="android.intent.action.VIEW"/>
-                  <category android:name="android.intent.category.DEFAULT"/>
-                  <category android:name="android.intent.category.BROWSABLE"/>
-                  <data android:scheme="https" android:host="www.golapishop.online"/>
-                </intent-filter>
-              </activity>
-            </application>
-          </manifest>
-          EOF
+          cat > app/app/src/main/AndroidManifest.xml << 'EOF2'
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <application
+    android:label="Golapi Driver"
+    android:icon="@mipmap/ic_launcher"
+    android:theme="@style/AppTheme"
+    android:allowBackup="true">
+    <activity
+      android:name="com.google.androidbrowserhelper.trusted.LauncherActivity"
+      android:exported="true">
+      <meta-data
+        android:name="android.support.customtabs.trusted.DEFAULT_URL"
+        android:value="https://www.golapishop.online/?role=driver" />
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <data android:scheme="https" android:host="www.golapishop.online"/>
+      </intent-filter>
+    </activity>
+  </application>
+</manifest>
+EOF2
 
-          cat > app/app/src/main/res/values/styles.xml << 'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-            <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-              <item name="colorPrimary">#0A2F8C</item>
-            </style>
-          </resources>
-          EOF
+          cat > app/app/src/main/res/values/styles.xml << 'EOF2'
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <item name="colorPrimary">#0A2F8C</item>
+  </style>
+</resources>
+EOF2
 
       - name: Setup Gradle Wrapper
         run: cd app && gradle wrapper --gradle-version 8.4
@@ -147,15 +162,6 @@ jobs:
       - name: Collect APK
         run: cp $(find app -name "*.apk" -path "*/release/*" | head -1) output.apk
 
-      - name: Upload to Firebase App Distribution
-        uses: wzieba/Firebase-Distribution-Github-Action@v1
-        with:
-          appId: ${{ secrets.FIREBASE_APP_ID_DRIVER }}
-          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          groups: testers
-          file: output.apk
-          releaseNotes: "Build #${{ github.run_number }} — নতুন আপডেট"
-
       - uses: actions/upload-artifact@v4
         with:
           name: golapi-driver-v${{ github.run_number }}
@@ -164,7 +170,7 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: driver-v${{ github.run_number }}
-          name: "Golapi Golapi Driver v${{ github.run_number }}"
+          name: "Golapi Driver v${{ github.run_number }}"
           files: output.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
